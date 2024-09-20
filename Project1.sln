@@ -1,22 +1,206 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Project1", "Project1\Project1.vcxproj", "{CACE6990-CA85-4CE2-BA7A-9CC54873E9A2}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
-		Release|Win32 = Release|Win32
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CACE6990-CA85-4CE2-BA7A-9CC54873E9A2}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CACE6990-CA85-4CE2-BA7A-9CC54873E9A2}.Debug|Win32.Build.0 = Debug|Win32
-		{CACE6990-CA85-4CE2-BA7A-9CC54873E9A2}.Release|Win32.ActiveCfg = Release|Win32
-		{CACE6990-CA85-4CE2-BA7A-9CC54873E9A2}.Release|Win32.Build.0 = Release|Win32
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-EndGlobal
+#include "iGraphics.h"
+#define JUMP_LIMIT 40
+//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::Idraw Here::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
+int a, b, p, w, h;
+float x = 0;
+bool stand = true;
+bool run = false;
+bool runback = false;
+float charPosX = 10;
+float charY = 5;
+const int jumpHeight = 60;
+const int screenWidth = 600;
+const int charWidth = 100;
+float carPosX = screenWidth;
+float heliX = screenWidth;
+float heliWidth = 300;
+
+float carStopPos = 360;
+float heliStop = 300;
+const int carWidth = 300;
+float wX = 1200;
+bool jump = false;
+bool jumpUp = false;
+bool wShow = true;
+
+int cTime = 0;
+const int cTime2 = 5000;
+// Timer variables
+int wTime = 0;
+const int wTime2 = 5000;  // 20 seconds (in milliseconds)
+
+void checkCollision()
+{
+	if (wShow) // Check collision only if the water bottle is visible
+	{
+		// Check X-axis overlap (character width and water bottle width are considered)
+		if (charPosX + charWidth >= wX && charPosX <= wX + 80) // X-axis collision
+		{
+			// Check Y-axis overlap (character height and water bottle height are considered)
+			if (charY + 120 >= 140 && charY <= 140 + 80) // Y-axis collision
+			{
+				wShow = false;  
+
+
+			}
+		}
+	}
+}
+
+void iDraw() {
+	iClear();
+	iShowImage(x, 0, screenWidth, 400, a);
+	iShowImage(x + screenWidth, 0, screenWidth, 400, a);
+	iShowImage(carPosX, 4, carWidth, 160, p);
+	iShowImage(heliX, 300, heliWidth, 120, h);
+
+	iShowImage(charPosX, charY, charWidth, 120, b);
+	
+
+	// Background scrolling
+	x -= 0.05;
+	if (x < -600) {
+		x = 0;
+	}
+	
+	if (heliX > heliStop) {
+		heliX -= 0.1;
+	}
+	
+	// Flying object appears after 20 seconds
+	if (wTime >= wTime2 && wShow) {
+		iShowImage(wX, 140, 80, 80, w);
+		wX -= 0.1;  // Move the flying object
+	}
+
+	// Reset flying object's position once it goes off-screen
+	if (wX < -80) {
+		wX = screenWidth + 200;  // Reset position
+		wTime = 0;  // Reset the timer for the next appearance
+	}
+
+
+	
+		if (run) {
+			charPosX += 0.09;
+			if (charPosX + charWidth >= screenWidth) {
+				charPosX = screenWidth - charWidth;
+			}
+		}
+		if (runback) {
+			charPosX -= 0.09;
+			if (charPosX <= 0) {
+				charPosX = 0;
+			}
+		}
+	
+	
+
+	// Car movement logic (stops at carStopPos)
+	if (carPosX > carStopPos) {
+		carPosX -= 0.1;
+	}
+	if (cTime >= cTime2) {
+		
+		carPosX += 0.2;  // Move the flying object
+	}
+
+	if (jump)
+	{
+		if (jumpUp)
+		{
+			charY += 0.05;
+			if (charY >= jumpHeight)
+			{
+				jumpUp = false;
+			}
+		}
+		else
+		{
+			charY -= 0.05;
+			if (charY <= 20)
+			{
+				charY = 20;
+				jump = false;
+				jumpUp = false;
+			}
+		}
+		
+	}
+	checkCollision();
+	
+	
+}
+
+
+// Timer update function (runs continuously)
+void change() {
+	wTime += 20;  
+	cTime += 20;
+	
+}
+
+void iMouseMove(int mx, int my) {}
+
+//*******************************************************************ipassiveMouse***********************************************************************//
+void iPassiveMouseMove(int mx, int my) {}
+
+void iMouse(int button, int state, int mx, int my) {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {}
+
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {}
+}
+
+void iKeyboard(unsigned char key) {
+	if (key == 'd') {
+		stand = false;
+		run = true;
+		runback = false;
+		
+	}
+	if (key == 'a') {
+		stand = false;
+		run = false;
+		runback = true;
+	}
+	if (key == 'w' && !jump)
+	{
+		jump = true;
+		jumpUp = true;
+	}
+}
+
+void iSpecialKeyboard(unsigned char key) {
+	if (key == GLUT_KEY_RIGHT) {
+		run = true;
+		runback = false;
+	}
+	if (key == GLUT_KEY_LEFT) {
+		run = false;
+		runback = true;
+	}
+
+	if (key == GLUT_KEY_UP) {
+		jump = true;
+		jumpUp = true;
+	}
+	if (key == GLUT_KEY_HOME) {}
+
+
+}
+
+int main() {
+	iInitialize(600, 400, "July 36th");
+
+	a = iLoadImage("./images/du.jpg");
+	b = iLoadImage("./images/student.jpg");
+	p = iLoadImage("./images/police.jpg");
+	w = iLoadImage("./images/water.png");
+	h = iLoadImage("./images/police.jpg");
+	
+
+	iSetTimer(20, change);  
+	iStart();  
+
+	return 0;
+}
