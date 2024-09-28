@@ -31,7 +31,7 @@ float wX = 1200;
 bool jump = false;
 bool jumpUp = false;
 bool wShow = true;
-int bulletX = 500;
+int bulletX = 300;
 int hbx = heliStop;
 int hby = 40;
 int cTime = 0;
@@ -44,10 +44,10 @@ bool slide = false;
 int j = 0;
 int carA = 0;
 
-const int cTime2 = 3000;
+const int cTime2 = 12000;
 // Timer variables
 int wTime = 0;
-const int wTime2 = 100;  // 20 seconds (in milliseconds)
+const int wTime2 = 3000;  // 20 seconds (in milliseconds)
 
 bool bulletFired = false;  // Flag to control bullet firing
 int btime = 1000;
@@ -197,10 +197,14 @@ void iDraw() {
 	if (cTime >= cTime2) {
 		carPosX += 0.2;  // Move the flying object
 		bulletX = false;
-		if (carPosX > 1000 )
+
+		iShowImage(p2X+1200, 4, carWidth, 160, p);
+		p2X -= 0.5;
+
+		if (p2X<-1.0 && carPosX > 1000 )
 		{
 			iShowImage(jeepX , 4, 120, 130, jeep);
-			jeepX -= 0.1;
+			jeepX -= 0.3;
 			if (jeepX <-120)
 			{
 				j++;
@@ -223,16 +227,7 @@ void iDraw() {
 		
 	
 	
-	if (j > 10) {
-		// Move p2X to the left
-		p2X -= 0.1;
-
-		// Draw p2 car
-		iShowImage(p2X, 4, carWidth, 160, p);
-		// Reset p2X once it goes off-screen
-		if (p2X < -p2Width-350) {  // Use the width of p2 car to determine off-screen
-		}
-	}
+	
 }
 	
 
@@ -242,13 +237,13 @@ void iDraw() {
 	// Jumping logic
 	if (jump) {
 		if (jumpUp) {
-			charY += 0.05;
+			charY += 0.08;
 			if (charY >= jumpHeight) {
 				jumpUp = false;
 			}
 		}
 		else {
-			charY -= 0.05;
+			charY -= 0.09;
 			if (charY <= 20) {
 				charY = 20;
 				jump = false;
