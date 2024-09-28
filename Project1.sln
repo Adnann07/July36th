@@ -1,7 +1,9 @@
 #include "iGraphics.h"
+#include <stdlib.h>
+#include <time.h>
 #define JUMP_LIMIT 40
-//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::Idraw Here::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
-int a, b, p, w, h;
+
+int a, b, p, w, h, bullet,s ,hb;
 float x = 0;
 bool stand = true;
 bool run = false;
@@ -12,9 +14,11 @@ const int jumpHeight = 60;
 const int screenWidth = 600;
 const int charWidth = 100;
 float carPosX = screenWidth;
+float jeepPosX = screenWidth;
 float heliX = screenWidth;
 float heliWidth = 300;
-
+float c1 = 0;
+float c2 = 1000;
 float carStopPos = 360;
 float heliStop = 300;
 const int carWidth = 300;
@@ -22,26 +26,46 @@ float wX = 1200;
 bool jump = false;
 bool jumpUp = false;
 bool wShow = true;
-
+int bulletX = 500;
+int hbx = heliStop;
+int hby = 40;
 int cTime = 0;
-const int cTime2 = 5000;
+int st = 0;
+int st2 = 1000;
+
+bool slide = false;
+
+
+
+const int cTime2 = 3000;
 // Timer variables
 int wTime = 0;
-const int wTime2 = 5000;  // 20 seconds (in milliseconds)
+const int wTime2 = 100;  // 20 seconds (in milliseconds)
 
-void checkCollision()
+bool bulletFired = false;  // Flag to control bullet firing
+int btime = 1000;
+int btime2 = 500000;
+bool hbulletFired = false;
+int hbtime = 0;
+int hbtime2 = 80000;
+
+void checkCollisionW()
 {
+	
 	if (wShow) // Check collision only if the water bottle is visible
 	{
 		// Check X-axis overlap (character width and water bottle width are considered)
 		if (charPosX + charWidth >= wX && charPosX <= wX + 80) // X-axis collision
 		{
 			// Check Y-axis overlap (character height and water bottle height are considered)
-			if (charY + 120 >= 140 && charY <= 140 + 80) // Y-axis collision
+			if (charY + 110 >= 140 && charY <= 140 + 80) // Y-axis collision
 			{
-				wShow = false;  
-
-
+				wShow = false;
+				wX = screenWidth + 200;
+				wTime = 0;
+				
+				
+				
 			}
 		}
 	}
@@ -52,24 +76,40 @@ void iDraw() {
 	iShowImage(x, 0, screenWidth, 400, a);
 	iShowImage(x + screenWidth, 0, screenWidth, 400, a);
 	iShowImage(carPosX, 4, carWidth, 160, p);
-	iShowImage(heliX, 300, heliWidth, 120, h);
+	
 
 	iShowImage(charPosX, charY, charWidth, 120, b);
 	
+	iShowImage(heliX, 300, heliWidth, 120, h);
 
 	// Background scrolling
 	x -= 0.05;
 	if (x < -600) {
 		x = 0;
 	}
-	
-	if (heliX > heliStop) {
+
+	if (heliX >= heliStop) {
 		heliX -= 0.1;
 	}
-	
+	if (heliX <= heliStop && hbtime >= hbtime2 && !hbulletFired) {
+		hbulletFired = true;  // Set the bullet fired flag
+		hbx = heliX-40;  // Adjust bullet position to align with helicopter
+		hby = rand() % 120 + 200;  // Align the bullet Y position with the helicopter's Y position
+		hbtime = 0;
+	}
+
+	if (hbulletFired) {
+		iShowImage(hbx - 50, hby -(rand()%120), 50, 30, hb);
+		hbx -= 0.0000000005;  // Adjust the bullet speed
+		hby -= 0.0000000005;
+		if (hbx < 30 || hby<10) {  // Reset the bullet once it goes off-screen
+			hbulletFired = false;
+		}
+	}
+	hbtime += 20;
 	// Flying object appears after 20 seconds
 	if (wTime >= wTime2 && wShow) {
-		iShowImage(wX, 140, 80, 80, w);
+		iShowImage(wX, 160, 80, 80, w);
 		wX -= 0.1;  // Move the flying object
 	}
 
@@ -78,71 +118,116 @@ void iDraw() {
 		wX = screenWidth + 200;  // Reset position
 		wTime = 0;  // Reset the timer for the next appearance
 	}
-
-
-	
-		if (run) {
-			charPosX += 0.09;
-			if (charPosX + charWidth >= screenWidth) {
-				charPosX = screenWidth - charWidth;
-			}
-		}
-		if (runback) {
-			charPosX -= 0.09;
-			if (charPosX <= 0) {
-				charPosX = 0;
-			}
-		}
-	
-	
-
-	// Car movement logic (stops at carStopPos)
-	if (carPosX > carStopPos) {
-		carPosX -= 0.1;
+	if (!wShow && wTime >= wTime2) {
+		wShow = true;             // Make the water bottle visible again
+		// Optionally, you can randomize the y-position or other attributes here
 	}
-	if (cTime >= cTime2) {
-		
-		carPosX += 0.2;  // Move the flying object
+	// Character movement logic
+	if (run) {
+		charPosX += 0.09;
+		if (charPosX + charWidth >= screenWidth) {
+			charPosX = screenWidth - charWidth;
+		}
+	}
+	if (runback) {
+		charPosX -= 0.09;
+		if (charPosX <= 0) {
+			charPosX = 0;
+		}
 	}
 
-	if (jump)
-	{
-		if (jumpUp)
+	
+	if ( carPosX >= carStopPos) {
+		if (c1 >= c2)
 		{
+			carPosX -= 0.1;
+		}
+		
+	
+
+	
+	}
+	
+
+	if (c1 >= c2 && btime > btime2 && !bulletFired) {
+		bulletFired = true;  // Set the bullet fired flag
+		bulletX = carPosX;
+		btime = 0;
+
+	}
+
+	// Reset flying object's position once it goes off-screen
+	if (bulletFired) {
+		iShowImage(bulletX - 50, 50, 50, 30, bullet);
+		bulletX -= 0.0000000005;
+		if (bulletX<30)
+		{
+			bulletFired = false;
+
+
+		}
+	}
+	btime += 100;
+
+	if (cTime >= cTime2) {
+		carPosX += 0.2;  // Move the flying object
+		bulletX = false;
+		
+
+	}
+
+
+	
+
+
+	
+	
+
+	// Jumping logic
+	if (jump) {
+		if (jumpUp) {
 			charY += 0.05;
-			if (charY >= jumpHeight)
-			{
+			if (charY >= jumpHeight) {
 				jumpUp = false;
 			}
 		}
-		else
-		{
+		else {
 			charY -= 0.05;
-			if (charY <= 20)
-			{
+			if (charY <= 20) {
 				charY = 20;
 				jump = false;
 				jumpUp = false;
 			}
 		}
+	}
+	
+	if (slide)
+	{
+		charY = 1;
+		if (st >= st2)
+
+		{
+			slide = false;
+			charY = 18;
+			st = 0;
+		}
 		
 	}
-	checkCollision();
-	
-	
+	checkCollisionW();
 }
 
-
-// Timer update function (runs continuously)
 void change() {
-	wTime += 20;  
+	wTime += 20;
 	cTime += 20;
-	
+	btime += 100;
+	c1 += 20;
+	st += 50;
+	hbtime += 50;
+
 }
 
 void iMouseMove(int mx, int my) {}
 
-//*******************************************************************ipassiveMouse***********************************************************************//
 void iPassiveMouseMove(int mx, int my) {}
 
 void iMouse(int button, int state, int mx, int my) {
@@ -156,15 +241,20 @@ void iKeyboard(unsigned char key) {
 		stand = false;
 		run = true;
 		runback = false;
-		
 	}
 	if (key == 'a') {
 		stand = false;
 		run = false;
 		runback = true;
 	}
-	if (key == 'w' && !jump)
-	{
+	if (key == 's' && !slide) {
+		stand = false;
+		run = false;
+		runback = false;
+		
+		slide = true;
+	}
+	if (key == 'w' && !jump) {
 		jump = true;
 		jumpUp = true;
 	}
@@ -179,14 +269,19 @@ void iSpecialKeyboard(unsigned char key) {
 		run = false;
 		runback = true;
 	}
-
 	if (key == GLUT_KEY_UP) {
 		jump = true;
 		jumpUp = true;
 	}
-	if (key == GLUT_KEY_HOME) {}
+	if (key == GLUT_KEY_DOWN) {
+		jump = false;
+		jumpUp = false;
+		stand = false;
+		run = false;
+		runback = false;
 
-
+		slide = true;
+	}
 }
 
 int main() {
@@ -197,10 +292,12 @@ int main() {
 	p = iLoadImage("./images/police.jpg");
 	w = iLoadImage("./images/water.png");
 	h = iLoadImage("./images/police.jpg");
-	
+	bullet = iLoadImage("./images/bullet.png");
+	hb = iLoadImage("./images/bullet.png");
+	s = iLoadImage("./images/student.jpg");
 
-	iSetTimer(20, change);  
-	iStart();  
+	iSetTimer(20, change);
+	iStart();
 
 	return 0;
 }
