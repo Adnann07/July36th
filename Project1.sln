@@ -1,25 +1,30 @@
 #include "iGraphics.h"
 #include <stdlib.h>
 #include <time.h>
-#define JUMP_LIMIT 40
-
-int a, b, p, w, h, bullet,s ,hb;
+#define JUMP_LIMIT 200
+using namespace std;
+int a, b, p, w, h, bullet,s ,hb, jeep, p2;
 float x = 0;
 bool stand = true;
 bool run = false;
 bool runback = false;
 float charPosX = 10;
 float charY = 5;
-const int jumpHeight = 60;
+
+const int jumpHeight = 100;
 const int screenWidth = 600;
 const int charWidth = 100;
+const int p2Width = 200;
 float carPosX = screenWidth;
 float jeepPosX = screenWidth;
+float p2X = screenWidth;
 float heliX = screenWidth;
 float heliWidth = 300;
 float c1 = 0;
 float c2 = 1000;
 float carStopPos = 360;
+
+float p2StopPos = 360;
 float heliStop = 300;
 const int carWidth = 300;
 float wX = 1200;
@@ -36,6 +41,8 @@ int st2 = 1000;
 bool slide = false;
 
 
+int j = 0;
+int carA = 0;
 
 const int cTime2 = 3000;
 // Timer variables
@@ -47,8 +54,10 @@ int btime = 1000;
 int btime2 = 500000;
 bool hbulletFired = false;
 int hbtime = 0;
-int hbtime2 = 80000;
+int hbtime2 = 2000;
 
+
+float jeepX = screenWidth;
 void checkCollisionW()
 {
 	
@@ -91,18 +100,35 @@ void iDraw() {
 	if (heliX >= heliStop) {
 		heliX -= 0.1;
 	}
-	if (heliX <= heliStop && hbtime >= hbtime2 && !hbulletFired) {
-		hbulletFired = true;  // Set the bullet fired flag
-		hbx = heliX-40;  // Adjust bullet position to align with helicopter
-		hby = rand() % 120 + 200;  // Align the bullet Y position with the helicopter's Y position
-		hbtime = 0;
+	else
+	{
+		heliX = heliStop;
 	}
+	if (heliX < 0) {
+		heliX += 0.2; // helicopter moves right
+		
+	}
+
+	
+	
+	if (heliX <= heliStop && hbtime >= hbtime2 && !hbulletFired && j>=2) {
+		hbulletFired = true;  // Set the bullet fired flag
+		hbx = heliX + rand() % 300;  // Adjust bullet position to align with helicopter
+		hby = rand() % 300 + 200;  // Align the bullet Y position with the helicopter's Y position
+		hbtime = 0;
+		
+		
+		
+    }
+
+		
+	
 
 	if (hbulletFired) {
 		iShowImage(hbx - 50, hby -(rand()%120), 50, 30, hb);
-		hbx -= 0.0000000005;  // Adjust the bullet speed
-		hby -= 0.0000000005;
-		if (hbx < 30 || hby<10) {  // Reset the bullet once it goes off-screen
+		hbx -= 0.3;  // Adjust the bullet speed
+		hby -= 0.5;
+		if (hbx < 5 || hby<5) {  // Reset the bullet once it goes off-screen
 			hbulletFired = false;
 		}
 	}
@@ -137,15 +163,13 @@ void iDraw() {
 	}
 
 	
-	if ( carPosX >= carStopPos) {
+	if ( carPosX >= carStopPos ) {
+		
 		if (c1 >= c2)
 		{
 			carPosX -= 0.1;
 		}
-		
-	
 
-	
 	}
 	
 
@@ -153,6 +177,7 @@ void iDraw() {
 		bulletFired = true;  // Set the bullet fired flag
 		bulletX = carPosX;
 		btime = 0;
+
 
 	}
 
@@ -172,13 +197,44 @@ void iDraw() {
 	if (cTime >= cTime2) {
 		carPosX += 0.2;  // Move the flying object
 		bulletX = false;
+		if (carPosX > 1000 )
+		{
+			iShowImage(jeepX , 4, 120, 130, jeep);
+			jeepX -= 0.1;
+			if (jeepX <-120)
+			{
+				j++;
+				if (j < 5)
+				{
+					jeepX = screenWidth;  // Reset jeep position to reappear
+
+				}
+				else
+				{
+					jeepX = -120;
+				}
+				
+				
+			}
+			
+		}
 		
 
-	}
-
-
+		
 	
+	
+	if (j > 10) {
+		// Move p2X to the left
+		p2X -= 0.1;
 
+		// Draw p2 car
+		iShowImage(p2X, 4, carWidth, 160, p);
+		// Reset p2X once it goes off-screen
+		if (p2X < -p2Width-350) {  // Use the width of p2 car to determine off-screen
+		}
+	}
+}
+	
 
 	
 	
@@ -295,6 +351,8 @@ int main() {
 	bullet = iLoadImage("./images/bullet.png");
 	hb = iLoadImage("./images/bullet.png");
 	s = iLoadImage("./images/student.jpg");
+	jeep = iLoadImage("./images/bike.jpg");
+	p2 = iLoadImage("./images/police.jpg");
 
 	iSetTimer(20, change);
 	iStart();
