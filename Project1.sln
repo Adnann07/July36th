@@ -4,7 +4,7 @@
 #define JUMP_LIMIT 200
 
 using namespace std;
-int a, b, p, w, h, bullet,s ,hb, jeep, p2;
+int a, b, p, w, h, bullet,s ,hb, jeep, p2, slideC;
 float x = 0;
 bool stand = true;
 bool run = false;
@@ -41,7 +41,7 @@ int st2 = 1000;
 
 bool slide = false;
 
-int health = 100;
+
 int j = 0;
 int carA = 0;
 
@@ -55,28 +55,210 @@ int btime = 1000;
 int btime2 = 500000;
 bool hbulletFired = false;
 int hbtime = 0;
-int hbtime2 = 2000;
+int hbtime2 = 20000;
 
 
 float jeepX = screenWidth;
-void checkCollisionW()
-{
-	
-	if (wShow) // Check collision only if the water bottle is visible
-	{
-		// Check X-axis overlap (character width and water bottle width are considered)
-		if (charPosX + charWidth >= wX && charPosX <= wX + 80) // X-axis collision
-		{
-			// Check Y-axis overlap (character height and water bottle height are considered)
-			if (charY + 110 >= 140 && charY <= 140 + 80) // Y-axis collision
-			{
-				wShow = false;
+
+bool charRun = true;
+bool charSlide = false;
+
+
+int slideX = 0;
+int slideT = 0;
+
+bool carCollisionActive = false;
+bool bulletCollisionActive = false;
+bool hbulletCollisionActive = false;
+int health = 100;
+
+
+
+bool p2CollisionActive = false;
+bool jeepCollisionActive = false;
+
+void checkCollisionP2() {
+	// Define p2's bounding box
+	float p2Left = p2X + 1200; // Adjust based on how p2 is displayed
+	float p2Right = p2Left + p2Width;
+	float p2Bottom = 4;
+	float p2Top = p2Bottom + 160;
+
+	// Define character's bounding box
+	float charLeft = charPosX;
+	float charRight = charPosX + charWidth;
+	float charBottom = charY;
+	float charTop = charY + 120;
+
+	// Check for overlap in both X and Y axes
+	bool collisionX = charRight >= p2Left && charLeft <= p2Right;
+	bool collisionY = charTop >= p2Bottom && charBottom <= p2Top;
+
+	if (collisionX && collisionY) {
+		if (!p2CollisionActive) {  // Prevent multiple deductions
+			health -= 15;  // Adjust damage as needed
+			if (health < 0)
+				health = 0;
+			p2CollisionActive = true;  // Set collision active
+		}
+	}
+	else {
+		p2CollisionActive = false;  // Reset collision flag when not colliding
+	}
+}
+void checkCollisionJeep() {
+	// Define jeep's bounding box
+	float jeepLeft = jeepX;
+	float jeepRight = jeepX + 120; // Width of jeep image
+	float jeepBottom = 4;
+	float jeepTop = jeepBottom + 130; // Height of jeep image
+
+	// Define character's bounding box
+	float charLeft = charPosX;
+	float charRight = charPosX + charWidth;
+	float charBottom = charY;
+	float charTop = charY + 120;
+
+	// Check for overlap in both X and Y axes
+	bool collisionX = charRight >= jeepLeft && charLeft <= jeepRight;
+	bool collisionY = charTop >= jeepBottom && charBottom <= jeepTop;
+
+	if (collisionX && collisionY) {
+		if (!jeepCollisionActive) {  // Prevent multiple deductions
+			health -= 10;  // Adjust damage as needed
+			if (health < 0)
+				health = 0;
+			jeepCollisionActive = true;  // Set collision active
+		}
+	}
+	else {
+		jeepCollisionActive = false;  // Reset collision flag when not colliding
+	}
+}
+
+
+void checkCollisionW() {
+	if (wShow) { // Check collision only if the water bottle is visible
+		// Define bounding boxes
+		float waterLeft = wX;
+		float waterRight = wX + 80;
+		float waterBottom = 160;
+		float waterTop = 160 + 80;
+
+		float charLeft = charPosX;
+		float charRight = charPosX + charWidth;
+		float charBottom = charY;
+		float charTop = charY + 120;
+
+		// Check for overlap in both X and Y axes
+		bool collisionX = charRight >= waterLeft && charLeft <= waterRight;
+		bool collisionY = charTop >= waterBottom && charBottom <= waterTop;
+
+		if (collisionX && collisionY) {
+			if (!carCollisionActive) {  // Prevent multiple deductions
+				health += 10;  // Increase health by collecting water (assuming it's a health pack)
+				if (health > 100)
+					health = 100;
+				wShow = false;  // Hide the water bottle after collection
 				wX = screenWidth + 200;
 				wTime = 0;
-				
-				
-				
 			}
+		}
+	}
+}
+
+// Function to check collision between character and car
+void checkCollisionCar() {
+	// Car's bounding box
+	float carLeft = carPosX;
+	float carRight = carPosX + carWidth;
+	float carBottom = 4;
+	float carTop = 4 + 160;
+
+	// Character's bounding box
+	float charLeft = charPosX;
+	float charRight = charPosX + charWidth;
+	float charBottom = charY;
+	float charTop = charY + 120;
+
+	// Check for overlap in both X and Y axes
+	bool collisionX = charRight >= carLeft && charLeft <= carRight;
+	bool collisionY = charTop >= carBottom && charBottom <= carTop;
+
+	if (collisionX && collisionY) {
+		if (!carCollisionActive) {  // Check if collision was not already active
+			health -= 5;  // Reduce health by 1
+			if (health < 0)
+				health = 0;
+			carCollisionActive = true;  // Set collision active
+		}
+	}
+	else {
+		carCollisionActive = false;  // Reset collision flag when not colliding
+	}
+}
+
+// Function to check collision between character and bullets
+void checkCollisionBullet() {
+	// Collision with car-fired bullet
+	if (bulletFired) {
+		float bulletLeft = bulletX - 50;
+		float bulletRight = bulletX;
+		float bulletBottom = 50;
+		float bulletTop = 50 + 30;
+
+		float charLeft = charPosX;
+		float charRight = charPosX + charWidth;
+		float charBottom = charY;
+		float charTop = charY + 120;
+
+		bool collisionX = charRight >= bulletLeft && charLeft <= bulletRight;
+		bool collisionY = charTop >= bulletBottom && charBottom <= bulletTop;
+
+		if (collisionX && collisionY) {
+			if (!bulletCollisionActive) {  // Prevent multiple deductions
+				health -= 3;  // Reduce health by 5 for bullets
+				if (health < 0)
+					health = 0;
+
+				// Reset the bullet
+				bulletFired = false;
+				bulletCollisionActive = true;
+			}
+		}
+		else {
+			bulletCollisionActive = false;
+		}
+	}
+
+	// Collision with helicopter-fired bullet
+	if (hbulletFired) {
+		float hbulletLeft = hbx - 50;
+		float hbulletRight = hbx;
+		float hbulletBottom = hby - 120;  // Adjust based on your bullet's Y position logic
+		float hbulletTop = hby + 30;
+
+		float charLeft = charPosX;
+		float charRight = charPosX + charWidth;
+		float charBottom = charY;
+		float charTop = charY + 120;
+
+		bool collisionX = charRight >= hbulletLeft && charLeft <= hbulletRight;
+		bool collisionY = charTop >= hbulletBottom && charBottom <= hbulletTop;
+
+		if (collisionX && collisionY) {
+			if (!hbulletCollisionActive) {  // Prevent multiple deductions
+				health -= 5;  // Reduce health by 5 for bullets
+				if (health < 0)
+					health = 0;
+
+				// Reset the helicopter bullet
+				hbulletFired = false;
+				hbulletCollisionActive = true;
+			}
+		}
+		else {
+			hbulletCollisionActive = false;
 		}
 	}
 }
@@ -86,13 +268,16 @@ void checkCollisionW()
 #define HEALTH_BAR_WIDTH 100
 #define HEALTH_BAR_HEIGHT 20
 
-
 void drawHealthBars() {
 	// Waterish blue color for the health bar
-	iSetColor(0, 128, 255);
 
-	// Top-left position: (10, WINDOW_HEIGHT - HEALTH_BAR_HEIGHT)
-	iFilledRectangle(10, 360, health, HEALTH_BAR_HEIGHT);
+	iSetColor(255, 0, 0);  // Red color for health background
+	iFilledRectangle(10, 360, HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT);
+
+	// Health bar foreground
+	iSetColor(0, 128, 255);  // Blue color for current health
+	float currentHealthWidth = (HEALTH_BAR_WIDTH * health) / 100.0;
+	iFilledRectangle(10, 360, currentHealthWidth, HEALTH_BAR_HEIGHT);
 
 	// White border for the health bar
 	iSetColor(255, 255, 255);
@@ -103,12 +288,33 @@ void iDraw() {
 	iClear();
 	
 	iShowImage(x, 0, screenWidth, 400, a);
-	drawHealthBars();
+	
 	iShowImage(x + screenWidth, 0, screenWidth, 400, a);
+	drawHealthBars();
 	iShowImage(carPosX, 4, carWidth, 160, p);
 	
 
-	iShowImage(charPosX, charY, charWidth, 120, b);
+	if (charRun == true)
+	{
+		iShowImage(charPosX, charY, charWidth, 120, b);
+	}
+
+	if (charSlide == true)
+	{
+		iShowImage(charPosX, charY, charWidth, 120, slideC);
+		
+		if (slideT >= 700)
+		{
+			charSlide = false;
+			run = true;
+			
+
+			slideT = 0;
+		}
+	}
+	
+	
+	
 	
 	iShowImage(heliX, 300, heliWidth, 120, h);
 	
@@ -118,17 +324,22 @@ void iDraw() {
 		x = 0;
 	}
 
-	if (heliX >= heliStop) {
-		heliX -= 0.1;
-	}
-	else
+
+	if (j >= 1)
 	{
-		heliX = heliStop;
+		if (heliX >= heliStop) {
+			heliX -= 0.1;
+		}
+		else
+		{
+			heliX = heliStop;
+		}
+		if (heliX < 0) {
+			heliX += 0.2; // helicopter moves right
+
+		}
 	}
-	if (heliX < 0) {
-		heliX += 0.2; // helicopter moves right
-		
-	}
+	
 
 	
 	
@@ -143,15 +354,15 @@ void iDraw() {
     }
 
 		
-	if (j >= 10)
+	if (j >= 7)
 	{
 		hbulletFired = false;
 	}
 
 	if (hbulletFired) {
 		iShowImage(hbx - 50, hby -(rand()%120), 50, 30, hb);
-		hbx -= 0.3;  // Adjust the bullet speed
-		hby -= 0.5;
+		hbx -= 0.0000000005;  // Adjust the bullet speed
+		hby -= 0.0000000005;
 		if (hbx < 5 || hby<5) {  // Reset the bullet once it goes off-screen
 			hbulletFired = false;
 		}
@@ -232,7 +443,7 @@ void iDraw() {
 			if (jeepX <-120)
 			{
 				j++;
-				if (j < 5)
+				if (j < 4)
 				{
 					jeepX = screenWidth+1000;  // Reset jeep position to reappear
 
@@ -259,7 +470,7 @@ void iDraw() {
 	
 
 	// Jumping logic
-	if (jump) {
+	if (jump  ) {
 		if (jumpUp) {
 			charY += 0.08;
 			if (charY >= jumpHeight) {
@@ -276,19 +487,13 @@ void iDraw() {
 		}
 	}
 	
-	if (slide)
-	{
-		charY = 1;
-		if (st >= st2)
-
-		{
-			slide = false;
-			charY = 18;
-			st = 0;
-		}
-		
-	}
+	
 	checkCollisionW();
+	checkCollisionCar();      // Existing car collision
+	checkCollisionBullet();   // Existing bullet collision
+	checkCollisionP2();       // New p2 collision
+	checkCollisionJeep();
+	
 }
 
 void change() {
@@ -298,6 +503,7 @@ void change() {
 	c1 += 20;
 	st += 50;
 	hbtime += 50;
+	slideT += 20;
 
 }
 
@@ -339,23 +545,31 @@ void iSpecialKeyboard(unsigned char key) {
 	if (key == GLUT_KEY_RIGHT) {
 		run = true;
 		runback = false;
+		charRun = true;
+		charSlide = false;
 	}
 	if (key == GLUT_KEY_LEFT) {
 		run = false;
 		runback = true;
+		charRun = true;
+		charSlide = false;
 	}
 	if (key == GLUT_KEY_UP) {
 		jump = true;
 		jumpUp = true;
+		charRun = true;
+		charSlide = false;
 	}
 	if (key == GLUT_KEY_DOWN) {
 		jump = false;
 		jumpUp = false;
 		stand = false;
-		run = false;
-		runback = false;
+		run = true;
+		runback = true;
 
-		slide = true;
+		
+		charRun = true;
+		charSlide = true;
 	}
 }
 
@@ -372,6 +586,7 @@ int main() {
 	s = iLoadImage("./images/student.jpg");
 	jeep = iLoadImage("./images/bike.jpg");
 	p2 = iLoadImage("./images/police.jpg");
+	slideC = iLoadImage("./images/slide.jpg");
 
 	iSetTimer(20, change);
 	iStart();
