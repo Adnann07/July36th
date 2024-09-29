@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #define JUMP_LIMIT 200
+
 using namespace std;
 int a, b, p, w, h, bullet,s ,hb, jeep, p2;
 float x = 0;
@@ -40,7 +41,7 @@ int st2 = 1000;
 
 bool slide = false;
 
-
+int health = 100;
 int j = 0;
 int carA = 0;
 
@@ -80,9 +81,29 @@ void checkCollisionW()
 	}
 }
 
+#define WINDOW_HEIGHT 40
+
+#define HEALTH_BAR_WIDTH 100
+#define HEALTH_BAR_HEIGHT 20
+
+
+void drawHealthBars() {
+	// Waterish blue color for the health bar
+	iSetColor(0, 128, 255);
+
+	// Top-left position: (10, WINDOW_HEIGHT - HEALTH_BAR_HEIGHT)
+	iFilledRectangle(10, 360, health, HEALTH_BAR_HEIGHT);
+
+	// White border for the health bar
+	iSetColor(255, 255, 255);
+	iRectangle(10, 360, HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT);
+}
+
 void iDraw() {
 	iClear();
+	
 	iShowImage(x, 0, screenWidth, 400, a);
+	drawHealthBars();
 	iShowImage(x + screenWidth, 0, screenWidth, 400, a);
 	iShowImage(carPosX, 4, carWidth, 160, p);
 	
@@ -90,7 +111,7 @@ void iDraw() {
 	iShowImage(charPosX, charY, charWidth, 120, b);
 	
 	iShowImage(heliX, 300, heliWidth, 120, h);
-
+	
 	// Background scrolling
 	x -= 0.05;
 	if (x < -600) {
@@ -122,7 +143,10 @@ void iDraw() {
     }
 
 		
-	
+	if (j >= 10)
+	{
+		hbulletFired = false;
+	}
 
 	if (hbulletFired) {
 		iShowImage(hbx - 50, hby -(rand()%120), 50, 30, hb);
@@ -204,13 +228,13 @@ void iDraw() {
 		if (p2X<-1.0 && carPosX > 1000 )
 		{
 			iShowImage(jeepX , 4, 120, 130, jeep);
-			jeepX -= 0.3;
+			jeepX -= 0.2;
 			if (jeepX <-120)
 			{
 				j++;
 				if (j < 5)
 				{
-					jeepX = screenWidth;  // Reset jeep position to reappear
+					jeepX = screenWidth+1000;  // Reset jeep position to reappear
 
 				}
 				else
@@ -339,7 +363,7 @@ int main() {
 	iInitialize(600, 400, "July 36th");
 
 	a = iLoadImage("./images/du.jpg");
-	b = iLoadImage("./images/student.jpg");
+	b = iLoadImage("./images/student.png");
 	p = iLoadImage("./images/police.jpg");
 	w = iLoadImage("./images/water.png");
 	h = iLoadImage("./images/police.jpg");
