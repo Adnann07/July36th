@@ -4,7 +4,7 @@
 #define JUMP_LIMIT 200
 
 using namespace std;
-int a, b, p, w, h, bullet,s ,hb, jeep, p2, slideC;
+int a, b, p, w, h, bullet,s ,hb, jeep, p2,standing;
 float x = 0;
 bool stand = true;
 bool run = false;
@@ -20,7 +20,7 @@ float carPosX = screenWidth;
 float jeepPosX = screenWidth;
 float p2X = screenWidth;
 float heliX = screenWidth;
-float heliWidth = 300;
+float heliWidth = 320;
 float c1 = 0;
 float c2 = 1000;
 float carStopPos = 360;
@@ -48,7 +48,7 @@ int carA = 0;
 const int cTime2 = 12000;
 // Timer variables
 int wTime = 0;
-const int wTime2 = 3000;  // 20 seconds (in milliseconds)
+const int wTime2 = 2500;  // 20 seconds (in milliseconds)
 
 bool bulletFired = false;  // Flag to control bullet firing
 int btime = 1000;
@@ -60,7 +60,7 @@ int hbtime2 = 20000;
 
 float jeepX = screenWidth;
 
-bool charRun = true;
+bool charRun = false;
 bool charSlide = false;
 
 
@@ -287,43 +287,43 @@ void drawHealthBars() {
 void iDraw() {
 	iClear();
 	
+		
+	
+	
 	iShowImage(x, 0, screenWidth, 400, a);
 	
 	iShowImage(x + screenWidth, 0, screenWidth, 400, a);
+	if (stand)
+	{
+		iShowImage(10, 5, 100, 120, standing);
+	}
+	
 	drawHealthBars();
 	iShowImage(carPosX, 4, carWidth, 160, p);
 	
 
-	if (charRun == true)
+	if (charRun )
 	{
 		iShowImage(charPosX, charY, charWidth, 120, b);
+		stand=false;
 	}
 
-	if (charSlide == true)
-	{
-		iShowImage(charPosX, charY, charWidth, 120, slideC);
-		
-		if (slideT >= 700)
-		{
-			charSlide = false;
-			run = true;
-			
-
-			slideT = 0;
-		}
-	}
 	
 	
 	
 	
-	iShowImage(heliX, 300, heliWidth, 120, h);
+	
+	iShowImage(heliX, 200, heliWidth, 300, h);
 	
 	// Background scrolling
-	x -= 0.05;
-	if (x < -600) {
-		x = 0;
-	}
+	if (j < 100 && !stand)
+	{
+		x -= 0.05;
+		if (x < -600) {
+			x = 0;
+		}
 
+	}
 
 	if (j >= 1)
 	{
@@ -336,9 +336,14 @@ void iDraw() {
 		}
 		if (heliX < 0) {
 			heliX += 0.2; // helicopter moves right
+			
+			
 
 		}
 	}
+	
+		
+	
 	
 
 	
@@ -357,6 +362,7 @@ void iDraw() {
 	if (j >= 7)
 	{
 		hbulletFired = false;
+		heliX += 0.2;
 	}
 
 	if (hbulletFired) {
@@ -503,7 +509,7 @@ void change() {
 	c1 += 20;
 	st += 50;
 	hbtime += 50;
-	slideT += 20;
+	
 
 }
 
@@ -543,33 +549,29 @@ void iKeyboard(unsigned char key) {
 
 void iSpecialKeyboard(unsigned char key) {
 	if (key == GLUT_KEY_RIGHT) {
+		stand = false;
 		run = true;
 		runback = false;
 		charRun = true;
-		charSlide = false;
+		
 	}
 	if (key == GLUT_KEY_LEFT) {
+		stand = false;
 		run = false;
 		runback = true;
 		charRun = true;
-		charSlide = false;
+		
 	}
 	if (key == GLUT_KEY_UP) {
+		stand = false;
 		jump = true;
 		jumpUp = true;
 		charRun = true;
-		charSlide = false;
+		
 	}
 	if (key == GLUT_KEY_DOWN) {
-		jump = false;
-		jumpUp = false;
-		stand = false;
-		run = true;
-		runback = true;
-
 		
-		charRun = true;
-		charSlide = true;
+		
 	}
 }
 
@@ -577,16 +579,17 @@ int main() {
 	iInitialize(600, 400, "July 36th");
 
 	a = iLoadImage("./images/du.jpg");
-	b = iLoadImage("./images/student.png");
+	b = iLoadImage("./images/run.png");
 	p = iLoadImage("./images/police.jpg");
 	w = iLoadImage("./images/water.png");
-	h = iLoadImage("./images/police.jpg");
+	h = iLoadImage("./images/helicopter.png");
 	bullet = iLoadImage("./images/bullet.png");
 	hb = iLoadImage("./images/bullet.png");
-	s = iLoadImage("./images/student.jpg");
+	s = iLoadImage("./images/run.png");
 	jeep = iLoadImage("./images/bike.jpg");
 	p2 = iLoadImage("./images/police.jpg");
-	slideC = iLoadImage("./images/slide.jpg");
+	standing  = iLoadImage("./images/student.png");
+	
 
 	iSetTimer(20, change);
 	iStart();
