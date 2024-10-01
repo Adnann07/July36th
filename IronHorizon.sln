@@ -4,14 +4,14 @@
 #define JUMP_LIMIT 30
 
 using namespace std;
-int a, b, p, w, h, bullet,s ,hb, jeep, p2,standing,con;
+int a, b, p, w, h, bullet,s ,hb, jeep, p2,standing,con,start,e;
 float x = 0;
 bool stand = true;
 bool run = false;
 bool runback = false;
 float charPosX = 10;
-float charY = 5;
-
+float charY = 2;
+bool gameStart = true;
 const int jumpHeight = 100;
 const int screenWidth = 600;
 const int charWidth = 100;
@@ -38,19 +38,20 @@ int hby = 40;
 int cTime = 0;
 int st = 0;
 int st2 = 1000;
-
+float eX = screenWidth;
+float eY = 200;
 bool slide = false;
-
-
+int eTime = 0;
+int eTime2 = 5000;
+bool started=false;
 int j = 0;
 int carA = 0;
 
 const int cTime2 = 20000;
-// Timer variables
 int wTime = 0;
-const int wTime2 = 2000;  // 20 seconds (in milliseconds)
+const int wTime2 = 2000;  
 
-bool bulletFired = false;  // Flag to control bullet firing
+bool bulletFired = false; 
 int btime = 1000;
 int btime2 = 400000;
 bool hbulletFired = false;
@@ -80,74 +81,67 @@ bool jeepCollisionActive = false;
 
 bool healthZ = false;
 void checkCollisionP2() {
-	// Define p2's bounding box
-	float p2Left = p2X + 1200; // Adjust based on how p2 is displayed
+	float p2Left = p2X + 1200; 
 	float p2Right = p2Left + p2Width;
 	float p2Bottom = 4;
 	float p2Top = p2Bottom + 160;
 
-	// Define character's bounding box
 	float charLeft = charPosX;
 	float charRight = charPosX + charWidth;
 	float charBottom = charY;
 	float charTop = charY + 120;
 
-	// Check for overlap in both X and Y axes
 	bool collisionX = charRight >= p2Left && charLeft <= p2Right;
 	bool collisionY = charTop >= p2Bottom && charBottom <= p2Top;
 
 	if (collisionX && collisionY) {
-		if (!p2CollisionActive) {  // Prevent multiple deductions
-			health -= 15;  // Adjust damage as needed
+		if (!p2CollisionActive) { 
+			health -= 15;  
 			if (health < 0)
 			{
 				health = 0;
 				healthZ = true;
 			}
-			p2CollisionActive = true;  // Set collision active
+			p2CollisionActive = true;  
 		}
 	}
 	else {
-		p2CollisionActive = false;  // Reset collision flag when not colliding
+		p2CollisionActive = false; 
 	}
 }
 void checkCollisionJeep() {
-	// Define jeep's bounding box
 	float jeepLeft = jeepX;
-	float jeepRight = jeepX + 120; // Width of jeep image
+	float jeepRight = jeepX + 120; 
 	float jeepBottom = 4;
-	float jeepTop = jeepBottom + 130; // Height of jeep image
+	float jeepTop = jeepBottom + 130; 
 
-	// Define character's bounding box
 	float charLeft = charPosX;
 	float charRight = charPosX + charWidth;
 	float charBottom = charY;
 	float charTop = charY + 120;
 
-	// Check for overlap in both X and Y axes
 	bool collisionX = charRight >= jeepLeft && charLeft <= jeepRight;
 	bool collisionY = charTop >= jeepBottom && charBottom <= jeepTop;
 
 	if (collisionX && collisionY) {
-		if (!jeepCollisionActive) {  // Prevent multiple deductions
-			health -= 10;  // Adjust damage as needed
+		if (!jeepCollisionActive) {
+			health -= 10;  
 			if (health < 0)
 			{
 				health = 0;
 				healthZ = true;
 			}
-			jeepCollisionActive = true;  // Set collision active
+			jeepCollisionActive = true; 
 		}
 	}
 	else {
-		jeepCollisionActive = false;  // Reset collision flag when not colliding
+		jeepCollisionActive = false;  
 	}
 }
 
 
 void checkCollisionW() {
-	if (wShow) { // Check collision only if the water bottle is visible
-		// Define bounding boxes
+	if (wShow) { 
 		float waterLeft = wX;
 		float waterRight = wX + 80;
 		float waterBottom = 160;
@@ -158,16 +152,15 @@ void checkCollisionW() {
 		float charBottom = charY;
 		float charTop = charY + 120;
 
-		// Check for overlap in both X and Y axes
 		bool collisionX = charRight >= waterLeft && charLeft <= waterRight;
 		bool collisionY = charTop >= waterBottom && charBottom <= waterTop;
 
 		if (collisionX && collisionY) {
-			if (!carCollisionActive) {  // Prevent multiple deductions
-				health += 10;  // Increase health by collecting water (assuming it's a health pack)
+			if (!carCollisionActive) {  
+				health += 10;  
 				if (health > 100)
 					health = 100;
-				wShow = false;  // Hide the water bottle after collection
+				wShow = false; 
 				wX = screenWidth + 200;
 				wTime = 0;
 			}
@@ -175,43 +168,37 @@ void checkCollisionW() {
 	}
 }
 
-// Function to check collision between character and car
 void checkCollisionCar() {
-	// Car's bounding box
 	float carLeft = carPosX;
 	float carRight = carPosX + carWidth;
 	float carBottom = 4;
 	float carTop = 4 + 160;
 
-	// Character's bounding box
 	float charLeft = charPosX;
 	float charRight = charPosX + charWidth;
 	float charBottom = charY;
 	float charTop = charY + 120;
 
-	// Check for overlap in both X and Y axes
 	bool collisionX = charRight >= carLeft && charLeft <= carRight;
 	bool collisionY = charTop >= carBottom && charBottom <= carTop;
 
 	if (collisionX && collisionY) {
-		if (!carCollisionActive) {  // Check if collision was not already active
-			health -= 5;  // Reduce health by 1
+		if (!carCollisionActive) {
+			health -= 5;  
 			if (health < 0)
 			{
 				health = 0;
 				healthZ = true;
 			}
-			carCollisionActive = true;  // Set collision active
+			carCollisionActive = true;  
 		}
 	}
 	else {
-		carCollisionActive = false;  // Reset collision flag when not colliding
+		carCollisionActive = false; 
 	}
 }
 
-// Function to check collision between character and bullets
 void checkCollisionBullet() {
-	// Collision with car-fired bullet
 	if (bulletFired) {
 		float bulletLeft = bulletX - 50;
 		float bulletRight = bulletX;
@@ -227,15 +214,14 @@ void checkCollisionBullet() {
 		bool collisionY = charTop >= bulletBottom && charBottom <= bulletTop;
 
 		if (collisionX && collisionY) {
-			if (!bulletCollisionActive) {  // Prevent multiple deductions
-				health -= 3;  // Reduce health by 5 for bullets
+			if (!bulletCollisionActive) { 
+				health -= 3;  
 				if (health < 0)
 				{
 					health = 0;
 					healthZ = true;
 				}
 
-				// Reset the bullet
 				bulletFired = false;
 				bulletCollisionActive = true;
 			}
@@ -245,11 +231,10 @@ void checkCollisionBullet() {
 		}
 	}
 
-	// Collision with helicopter-fired bullet
 	if (hbulletFired) {
 		float hbulletLeft = hbx - 50;
 		float hbulletRight = hbx;
-		float hbulletBottom = hby - 120;  // Adjust based on your bullet's Y position logic
+		float hbulletBottom = hby - 120;  
 		float hbulletTop = hby + 30;
 
 		float charLeft = charPosX;
@@ -261,15 +246,14 @@ void checkCollisionBullet() {
 		bool collisionY = charTop >= hbulletBottom && charBottom <= hbulletTop;
 
 		if (collisionX && collisionY) {
-			if (!hbulletCollisionActive) {  // Prevent multiple deductions
-				health -= 5;  // Reduce health by 5 for bullets
+			if (!hbulletCollisionActive) { 
+				health -= 5;  
 				if (health < 0)
 				{
 					health = 0;
 					healthZ = true;
 				}
 
-				// Reset the helicopter bullet
 				hbulletFired = false;
 				hbulletCollisionActive = true;
 			}
@@ -286,17 +270,14 @@ void checkCollisionBullet() {
 #define HEALTH_BAR_HEIGHT 20
 
 void drawHealthBars() {
-	// Waterish blue color for the health bar
 
-	iSetColor(255, 0, 0);  // Red color for health background
+	iSetColor(255, 0, 0); 
 	iFilledRectangle(10, 360, HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT);
 
-	// Health bar foreground
-	iSetColor(0, 128, 255);  // Blue color for current health
+	iSetColor(0, 128, 255);  
 	float currentHealthWidth = (HEALTH_BAR_WIDTH * health) / 100.0;
 	iFilledRectangle(10, 360, currentHealthWidth, HEALTH_BAR_HEIGHT);
 
-	// White border for the health bar
 	iSetColor(255, 255, 255);
 	iRectangle(10, 360, HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT);
 }
@@ -308,26 +289,31 @@ void iDraw() {
 	
 	
 	
+	
 	iShowImage(x, 0, screenWidth, 400, a);
 	
 	
 	iShowImage(x + screenWidth, 0, screenWidth, 400, a);
-	if (stand && !healthZ)
+	if (stand && !healthZ  && !gameStart)
 	{
 		iShowImage(charPosX, charY, charWidth, 120, standing);
 		if (j <= 0)
 		{
-			iSetColor(255, 0, 0); // White color for text
+			iSetColor(255, 0, 0); 
 			iText(200, 330, "Press arrow keys to run", GLUT_BITMAP_HELVETICA_18);
 		}
 
 	}
 	
 	drawHealthBars();
-	iShowImage(carPosX, -50,  carWidth, 240, p);
+	if (!gameStart)
+	{
+		iShowImage(carPosX, -50, carWidth, 240, p);
+	}
+	
 	
 
-	if (charRun && !healthZ)
+	if (charRun && !healthZ&& !gameStart)
 	{
 		iShowImage(charPosX, charY, charWidth, 120, b);
 		stand=false;
@@ -340,8 +326,7 @@ void iDraw() {
 	
 	iShowImage(heliX, 200, heliWidth, 300, h);
 	
-	// Background scrolling
-	if (j < 100 && !stand && !healthZ)
+	if (j < 100 && !stand && !healthZ && !gameStart)
 	{
 		x -= 0.05;
 		if (x < -600) {
@@ -350,7 +335,7 @@ void iDraw() {
 
 	}
 
-	if (j >= 1 && !healthZ)
+	if (j >= 1 && !healthZ && !gameStart)
 	{
 		if (heliX >= heliStop) {
 			heliX -= 0.05;
@@ -360,7 +345,7 @@ void iDraw() {
 			heliX = heliStop;
 		}
 		if (heliX < 0) {
-			heliX += 0.2; // helicopter moves right
+			heliX += 0.2; 
 			
 			
 
@@ -373,10 +358,10 @@ void iDraw() {
 
 	
 	
-	if (heliX <= heliStop && hbtime >= hbtime2 && !hbulletFired && j >= 3 && !healthZ) {
-		hbulletFired = true;  // Set the bullet fired flag
-		hbx = heliX + rand() % 300;  // Adjust bullet position to align with helicopter
-		hby = rand() % 300 + 200;  // Align the bullet Y position with the helicopter's Y position
+	if (heliX <= heliStop && hbtime >= hbtime2 && !hbulletFired && j >= 3 && !healthZ && !gameStart) {
+		hbulletFired = true; 
+		hbx = heliX + rand() % 300; 
+		hby = rand() % 300 + 200;  
 		hbtime = 0;
 		
 		
@@ -384,52 +369,36 @@ void iDraw() {
     }
 
 		
-	if (j >= 9 && !healthZ)
-	{
-		hbulletFired = false;
-		heliX += 0.2;
-		charRun = false;
-		stand = true;
-		run = false;
-		runback = false;
-		jump = true;
-		
 
 
-	}
-
-	if (hbulletFired && !healthZ) {
+	if (hbulletFired && !healthZ && !gameStart) {
 		iShowImage(hbx - 50, hby -(rand()%120), 50, 30, hb);
-		hbx -= 0.0000000005;  // Adjust the bullet speed
+		hbx -= 0.0000000005; 
 		hby -= 0.0000000005;
-		if (hbx < 5 || hby<5) {  // Reset the bullet once it goes off-screen
+		if (hbx < 5 || hby<5) {  
 			hbulletFired = false;
 		}
 	}
 	hbtime += 20;
-	// Flying object appears after 20 seconds
-	if (wTime >= wTime2 && wShow) {
-		iShowImage(wX, 160, 80, 80, w);
-		wX -= 0.1;  // Move the flying object
+	if (wTime >= wTime2 && wShow && !gameStart) {
+		iShowImage(wX, 140, 40, 50, w);
+		wX -= 0.1;  
 	}
 
-	// Reset flying object's position once it goes off-screen
-	if (wX < -80 && !healthZ) {
-		wX = screenWidth + 200;  // Reset position
-		wTime = 0;  // Reset the timer for the next appearance
+	if (wX < -80 && !healthZ && !gameStart) {
+		wX = screenWidth + 200;  
+		wTime = 0; 
 	}
-	if (!wShow && wTime >= wTime2) {
-		wShow = true;             // Make the water bottle visible again
-		// Optionally, you can randomize the y-position or other attributes here
+	if (!wShow && wTime >= wTime2&& !gameStart) {
+		wShow = true;             
 	}
-	// Character movement logic
-	if (run && !healthZ) {
+	if (run && !healthZ && !gameStart) {
 		charPosX += 0.09;
 		if (charPosX + charWidth >= screenWidth) {
 			charPosX = screenWidth - charWidth;
 		}
 	}
-	if (runback) {
+	if (runback && !gameStart) {
 		charPosX -= 0.09;
 		if (charPosX <= 0) {
 			charPosX = 0;
@@ -437,7 +406,7 @@ void iDraw() {
 	}
 
 	
-	if (carPosX >= carStopPos && !healthZ) {
+	if (carPosX >= carStopPos && !healthZ && !gameStart) {
 		
 		if (c1 >= c2)
 		{
@@ -447,16 +416,15 @@ void iDraw() {
 	}
 	
 
-	if (c1 >= c2 && btime > btime2 && !bulletFired && !healthZ) {
-		bulletFired = true;  // Set the bullet fired flag
+	if (c1 >= c2 && btime > btime2 && !bulletFired && !healthZ && !gameStart) {
+		bulletFired = true;  
 		bulletX = carPosX;
 		btime = 0;
 
 
 	}
 
-	// Reset flying object's position once it goes off-screen
-	if (bulletFired && !healthZ) {
+	if (bulletFired && !healthZ && !gameStart) {
 		iShowImage(bulletX - 50, 50, 50, 30, bullet);
 		bulletX -= 0.0000000005;
 		if (bulletX<30)
@@ -468,16 +436,16 @@ void iDraw() {
 	}
 	btime += 100;
 
-	if (cTime >= cTime2 && !healthZ) {
+	if (cTime >= cTime2 && !healthZ && !gameStart) {
 		carPosX += 0.2;  // Move the flying object
 		bulletX = false;
 
 		iShowImage(p2X+1200, 4, 370 , 115, p2);
 		p2X -= 0.5;
 
-		if (p2X<-1.0 && carPosX > 1000 )
+		if (p2X<-1.0 && carPosX > 1000 && !gameStart)
 		{
-			iShowImage(jeepX , 4, 120, 130, jeep);
+			iShowImage(jeepX , 4, 180, 150, jeep);
 			jeepX -= 0.2;
 			if (jeepX <-120)
 			{
@@ -508,8 +476,7 @@ void iDraw() {
 	
 	
 
-	// Jumping logic
-	if (jump  && !healthZ) {
+	if (jump  && !healthZ && !gameStart) {
 		if (jumpUp) {
 			charY += 0.08;
 			if (charY >= jumpHeight) {
@@ -519,7 +486,7 @@ void iDraw() {
 		else {
 			charY -= 0.09;
 			if (charY <= 20) {
-				charY = 20;
+				charY = 7;
 				jump = false;
 				jumpUp = false;
 			}
@@ -530,25 +497,59 @@ void iDraw() {
 
 	
 	checkCollisionW();
-	checkCollisionCar();      // Existing car collision
-	checkCollisionBullet();   // Existing bullet collision
-	checkCollisionP2();       // New p2 collision
+	checkCollisionCar();      
+	checkCollisionBullet();   
+	checkCollisionP2();       
 	checkCollisionJeep();
 	if (healthZ)
 	{
 
 		iShowImage(0, 0, 600 , 400, con);
 	}
+	if (j >= 9 && !healthZ && !gameStart)
+	{
+		hbulletFired = false;
+		heliX += 0.2;
+		charRun = false;
+		stand = true;
+		run = false;
+		runback = false;
+		jump = true;
+		
+
+			iShowImage(eX, 300, 120, 100, e);
+			
+				eX -= 0.1;
+			
+		
+
+
+
+	
+	}
+	iShowImage(heliX, 200, heliWidth, 300, h);
+
+	
+	if (gameStart)
+	{
+		iShowImage(0, 0, 600, 400, start);
+	}
+
 	
 }
 
 void change() {
-	wTime += 20;
-	cTime += 20;
-	btime += 100;
-	c1 += 20;
-	st += 50;
-	hbtime += 50;
+	if (!gameStart)
+	{
+		wTime += 20;
+		cTime += 20;
+		btime += 100;
+		c1 += 20;
+		st += 50;
+		hbtime += 50;
+		eTime += 20;
+	}
+	
 	
 
 }
@@ -564,7 +565,11 @@ void iMouse(int button, int state, int mx, int my) {
 }
 
 void iKeyboard(unsigned char key) {
-	if (key == 'y' || key == 'Y')
+	if (key == ' ')
+	{
+		gameStart = false;
+	}
+	if (key == 'y' || key == 'Y' && !gameStart)
 	{
 		healthZ = false;
 		health = 100;
@@ -573,26 +578,24 @@ void iKeyboard(unsigned char key) {
 	{
 		exit(0);
 	}
-	if (key == 'd') {
+	if (key == 'd' && !gameStart) {
 		stand = false;
 		run = true;
 		runback = false;
+		charRun = true;
 	}
-	if (key == 'a') {
+	if (key == 'a' && !gameStart) {
 		stand = false;
 		run = false;
 		runback = true;
+		charRun = true;
 	}
-	if (key == 's' && !slide) {
+	
+	if (key == 'w' && !jump && !gameStart) {
 		stand = false;
-		run = false;
-		runback = false;
-		
-		slide = true;
-	}
-	if (key == 'w' && !jump) {
 		jump = true;
 		jumpUp = true;
+		charRun = true;
 	}
 }
 
@@ -625,7 +628,7 @@ void iSpecialKeyboard(unsigned char key) {
 }
 
 int main() {
-	iInitialize(600, 400, "July 36th");
+	iInitialize(600, 400, "Iron Horizon");
 
 	a = iLoadImage("./images/du.jpg");
 	b = iLoadImage("./images/run.png");
@@ -635,10 +638,13 @@ int main() {
 	bullet = iLoadImage("./images/bullet.png");
 	hb = iLoadImage("./images/bullet.png");
 	s = iLoadImage("./images/run.png");
-	jeep = iLoadImage("./images/bike.jpg");
+	jeep = iLoadImage("./images/bike.png");
 	p2 = iLoadImage("./images/police2.png");
 	standing  = iLoadImage("./images/student.png");
 	con = iLoadImage("./images/continue.png");
+	start = iLoadImage("./images/start.png");
+	e = iLoadImage("./images/e.png");
+
 	
 
 	iSetTimer(20, change);
