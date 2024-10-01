@@ -564,6 +564,15 @@ void iMouse(int button, int state, int mx, int my) {
 }
 
 void iKeyboard(unsigned char key) {
+	if (key == 'y' || key == 'Y')
+	{
+		healthZ = false;
+		health = 100;
+	}
+	if (key == 'n')
+	{
+		exit(0);
+	}
 	if (key == 'd') {
 		stand = false;
 		run = true;
