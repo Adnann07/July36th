@@ -300,7 +300,7 @@ void iDraw() {
 		if (j <= 0)
 		{
 			iSetColor(255, 0, 0); 
-			iText(200, 330, "Press arrow keys to run", GLUT_BITMAP_HELVETICA_18);
+			iText(255, 330, "Press arrow keys to run", GLUT_BITMAP_HELVETICA_18);
 		}
 
 	}
@@ -501,11 +501,7 @@ void iDraw() {
 	checkCollisionBullet();   
 	checkCollisionP2();       
 	checkCollisionJeep();
-	if (healthZ)
-	{
-
-		iShowImage(0, 0, 600 , 400, con);
-	}
+	
 	if (j >= 9 && !healthZ && !gameStart)
 	{
 		hbulletFired = false;
@@ -520,7 +516,12 @@ void iDraw() {
 			iShowImage(eX, 300, 120, 100, e);
 			
 				eX -= 0.1;
+
 			
+
+				iSetColor(255, 0, 0);
+				iText(280, 330, "we WON", GLUT_BITMAP_HELVETICA_18);
+				iText(271, 310, "press n to exit", GLUT_BITMAP_HELVETICA_18);
 		
 
 
@@ -528,11 +529,19 @@ void iDraw() {
 	
 	}
 	iShowImage(heliX, 200, heliWidth, 300, h);
+	if (healthZ)
+	{
 
+		iShowImage(0, 0, 600, 400, con);
+	}
 	
 	if (gameStart)
 	{
+	
 		iShowImage(0, 0, 600, 400, start);
+		iSetColor(255, 0, 0);
+		iText(245, 20, "Thanks for playing, artwork credits to ChatGPT", GLUT_BITMAP_HELVETICA_18);
+		
 	}
 
 	
